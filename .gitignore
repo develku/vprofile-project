@@ -1,0 +1,97 @@
+# Vagrant-specific
+.vagrant/
+.vagrantuser
+~/.vagrant.d/gems/
+~/.vagrant.d/data/
+
+# VirtualBox & VMWare (if used)
+*.box
+*.vdi
+*.vmdk
+*.vmx
+*.ovf
+
+# Provisioning scripts that may contain sensitive data
+puppet/hieradata/*
+!puppet/hieradata/*.example
+*puppet/hieradata/
+*puppet/hieradata/*.secret
+*ansible/vars/production.yml
+
+# Environment configuration files
+.env
+.env.local
+.env.production
+.env.secret
+
+# Editor and IDE artefacts
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# macOS -related
+.DS_Store
+.AppleDouble
+.LSOverride
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.desktop.ini
+ehthumbs.db
+Thumbs.db
+
+# macOS directories
+__MACOSX
+._*
+
+# Backup files created by editors
+*~
+
+# Other unnecessary files
+*.lock
+*.retry
+*.bak
+*.tmp
+*.class
+*.pyc
+*.pyo
+*.pyd
+*.pycache
+
+# Log files
+*.log
+
+# Database files
+*.sql
+*.sqlite
+
+# Dependencies
+node_modules/
+bower_components/
+.jekyll-cache/
+.jekyll-metadata
+.sass-cache
+
+# Python-specific
+*.py[cod]
+__pycache__/
+
+# Yarn-specific
+yarn-error.log
+
+# Docker-specific
+Dockerfile*
+.dockerignore
+docker-compose.yml
+.docker/
+
