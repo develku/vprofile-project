@@ -16,6 +16,8 @@
   - [Setup Process](#setup-process)
     - [2.1 - MySQL Setup](#21---mysql-setup)
     - [2.2 - Memcache Setup](#22---memcache-setup)
+    - [2.3 - RabbitMQ Setup](#23---rabbitmq-setup)
+    - [2.4 - Tomcat Setup](#24---tomcat-setup)
 
 ---
 
@@ -272,3 +274,76 @@ sudo firewall-cmd --reload
 # running as a daemon
 sudo memcached -p 11211 -U 11111 -u memcached -d
 ```
+
+---
+
+### 2.3 - RabbitMQ Setup
+
+Connecting to RabbitMQ from a different machine, remotely, remote connection.
+
+```bash
+vagrant ssh rmq01
+sudo -i
+
+# Verify Hosts entry.
+cat /etc/hosts
+
+# Update the system
+yum update -y
+
+# Disable SELinux on fedora
+# Disabled for the sake of this project, not recommended for production
+sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
+setenforce 0
+
+# Install Dependencies
+curl -s https://packagecloud.io/install/repositories/rabbitmq/erlang/script.rpm.sh | sudo bash
+sudo yum clean all
+sudo yum makecache
+sudo yum install erlang -y
+
+# Install Rabbitmq Server
+curl -s https://packagecloud.io/install/repositories/rabbitmq/rabbitmq-server/script.rpm.sh | sudo bash
+sudo yum install rabbitmq-server -y
+
+```
+
+Start & Enable **RabbitMQ Service**
+
+```bash
+sudo systemctl start rabbitmq-server
+sudo systemctl enable rabbitmq-server
+sudo systemctl status rabbitmq-server
+```
+
+Config Change
+
+```bash
+# below command will create a file and add the configuration to it.
+sudo sh -c 'echo "[{rabbit, [{loopback_users, []}]}]." > /etc/rabbitmq/rabbitmq.config'
+cat /etc/rabbitmq/rabbitmq.config
+
+# add_user <username> <password>
+sudo rabbitmqctl add_user test test
+
+# set_user_tags <username> <tag>
+sudo rabbitmqctl set_user_tags test administrator
+
+# Fedora changes
+firewall-cmd --add-port=5671/tcp --permanent
+firewall-cmd --add-port=5672/tcp --permanent
+firewall-cmd --reload
+
+# Restart RabbitMQ
+sudo systemctl restart rabbitmq-server
+
+# reboot the rabbitmq
+reboot
+
+```
+
+<img src="img/rabbit.png">
+
+---
+
+### 2.4 - Tomcat Setup

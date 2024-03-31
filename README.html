@@ -836,6 +836,8 @@ hue-6-2: #e6c07b
 <ul>
 <li><a href="#21---mysql-setup">2.1 - MySQL Setup</a></li>
 <li><a href="#22---memcache-setup">2.2 - Memcache Setup</a></li>
+<li><a href="#23---rabbitmq-setup">2.3 - RabbitMQ Setup</a></li>
+<li><a href="#24---tomcat-setup">2.4 - Tomcat Setup</a></li>
 </ul>
 </li>
 </ul>
@@ -1058,6 +1060,65 @@ sudo firewall-cmd --reload
 <span class="hljs-comment"># running as a daemon</span>
 sudo memcached -p 11211 -U 11111 -u memcached -d
 </code></pre>
+<hr>
+<h3 id="23---rabbitmq-setup">2.3 - RabbitMQ Setup</h3>
+<p>Connecting to RabbitMQ from a different machine, remotely, remote connection.</p>
+<pre><code class="language-bash">vagrant ssh rmq01
+sudo -i
+
+<span class="hljs-comment"># Verify Hosts entry.</span>
+<span class="hljs-built_in">cat</span> /etc/hosts
+
+<span class="hljs-comment"># Update the system</span>
+yum update -y
+
+<span class="hljs-comment"># Disable SELinux on fedora</span>
+<span class="hljs-comment"># Disabled for the sake of this project, not recommended for production</span>
+sed -i <span class="hljs-string">&#x27;s/SELINUX=enforcing/SELINUX=disabled/g&#x27;</span> /etc/selinux/config
+setenforce 0
+
+<span class="hljs-comment"># Install Dependencies</span>
+curl -s https://packagecloud.io/install/repositories/rabbitmq/erlang/script.rpm.sh | sudo bash
+sudo yum clean all
+sudo yum makecache
+sudo yum install erlang -y
+
+<span class="hljs-comment"># Install Rabbitmq Server</span>
+curl -s https://packagecloud.io/install/repositories/rabbitmq/rabbitmq-server/script.rpm.sh | sudo bash
+sudo yum install rabbitmq-server -y
+
+</code></pre>
+<p>Start &amp; Enable <strong>RabbitMQ Service</strong></p>
+<pre><code class="language-bash">sudo systemctl start rabbitmq-server
+sudo systemctl <span class="hljs-built_in">enable</span> rabbitmq-server
+sudo systemctl status rabbitmq-server
+</code></pre>
+<p>Config Change</p>
+<pre><code class="language-bash"><span class="hljs-comment"># below command will create a file and add the configuration to it.</span>
+sudo sh -c <span class="hljs-string">&#x27;echo &quot;[{rabbit, [{loopback_users, []}]}].&quot; &gt; /etc/rabbitmq/rabbitmq.config&#x27;</span>
+<span class="hljs-built_in">cat</span> /etc/rabbitmq/rabbitmq.config
+
+<span class="hljs-comment"># add_user &lt;username&gt; &lt;password&gt;</span>
+sudo rabbitmqctl add_user <span class="hljs-built_in">test</span> <span class="hljs-built_in">test</span>
+
+<span class="hljs-comment"># set_user_tags &lt;username&gt; &lt;tag&gt;</span>
+sudo rabbitmqctl set_user_tags <span class="hljs-built_in">test</span> administrator
+
+<span class="hljs-comment"># Fedora changes</span>
+firewall-cmd --add-port=5671/tcp --permanent
+firewall-cmd --add-port=5672/tcp --permanent
+firewall-cmd --reload
+
+<span class="hljs-comment"># Restart RabbitMQ</span>
+sudo systemctl restart rabbitmq-server
+
+<span class="hljs-comment"># reboot the rabbitmq</span>
+reboot
+
+</code></pre>
+<img src="file:////Users/kud/Library/Mobile Documents/com~apple~CloudDocs/Programming/github_repo/vprofile-project/vprofile-project/img/rabbit.png">
+<hr>
+<h3 id="24---tomcat-setup">2.4 - Tomcat Setup</h3>
 
             
             
