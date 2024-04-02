@@ -23,6 +23,7 @@ This project is a multi-machine environment on M series Macbook Pro, with the fo
     - [2.3 - RabbitMQ Setup](#23---rabbitmq-setup)
     - [2.4 - Tomcat Setup](#24---tomcat-setup)
     - [2.5 Code Build \& Deployment (app01)](#25-code-build--deployment-app01)
+    - [2.6 NGINX Setup](#26-nginx-setup)
 
 ---
 
@@ -567,3 +568,51 @@ systemctl restart tomcat
 <img src="img/tomcat.png">
 
 ---
+
+### 2.6 NGINX Setup
+
+```bash
+# Connect to the Nginx VM
+vagrant ssh web01
+sudo -i
+
+# Verify Hosts entry.
+cat /etc/hosts
+
+# update the system
+apt update && apt upgrade -y
+
+# install the nginx
+apt install nginx -y
+
+# Create Nginx configuration file
+vi /etc/nginx/sites-available/vproapp
+```
+
+Update with below content
+
+```bash
+upstream vproapp {
+ server app01:8080;
+}
+server {
+  listen 80;
+location / {
+  proxy_pass http://vproapp;
+ }
+}
+```
+
+Remove the default configuration file and create a symbolic link
+
+```bash
+# remove the default configuration file
+rm -rf /etc/nginx/sites-enabled/default
+
+# Create link to activate website
+ln -s /etc/nginx/sites-available/vproapp /etc/nginx/sites-enabled/vproapp
+
+# Restart Nginx
+systemctl restart nginx
+systemctl status nginx
+```

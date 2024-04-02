@@ -841,6 +841,7 @@ hue-6-2: #e6c07b
 <li><a href="#23---rabbitmq-setup">2.3 - RabbitMQ Setup</a></li>
 <li><a href="#24---tomcat-setup">2.4 - Tomcat Setup</a></li>
 <li><a href="#25-code-build--deployment-app01">2.5 Code Build &amp; Deployment (app01)</a></li>
+<li><a href="#26-nginx-setup">2.6 NGINX Setup</a></li>
 </ul>
 </li>
 </ul>
@@ -1306,6 +1307,45 @@ systemctl restart tomcat
 </code></pre>
 <img src="file:////Users/kud/Library/Mobile Documents/com~apple~CloudDocs/Programming/github_repo/vprofile-project/vprofile-project/img/tomcat.png">
 <hr>
+<h3 id="26-nginx-setup">2.6 NGINX Setup</h3>
+<pre><code class="language-bash"><span class="hljs-comment"># Connect to the Nginx VM</span>
+vagrant ssh web01
+sudo -i
+
+<span class="hljs-comment"># Verify Hosts entry.</span>
+<span class="hljs-built_in">cat</span> /etc/hosts
+
+<span class="hljs-comment"># update the system</span>
+apt update &amp;&amp; apt upgrade -y
+
+<span class="hljs-comment"># install the nginx</span>
+apt install nginx -y
+
+<span class="hljs-comment"># Create Nginx configuration file</span>
+vi /etc/nginx/sites-available/vproapp
+</code></pre>
+<p>Update with below content</p>
+<pre><code class="language-bash">upstream vproapp {
+ server app01:8080;
+}
+server {
+  listen 80;
+location / {
+  proxy_pass http://vproapp;
+ }
+}
+</code></pre>
+<p>Remove the default configuration file and create a symbolic link</p>
+<pre><code class="language-bash"><span class="hljs-comment"># remove the default configuration file</span>
+<span class="hljs-built_in">rm</span> -rf /etc/nginx/sites-enabled/default
+
+<span class="hljs-comment"># Create link to activate website</span>
+<span class="hljs-built_in">ln</span> -s /etc/nginx/sites-available/vproapp /etc/nginx/sites-enabled/vproapp
+
+<span class="hljs-comment"># Restart Nginx</span>
+systemctl restart nginx
+systemctl status nginx
+</code></pre>
 
             
             
