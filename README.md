@@ -2,6 +2,9 @@
 
 This project is a multi-machine environment on M series Macbook Pro, with the following machines:
 
+- Simple project to run and understand the workflow of web applications.
+- MySQL, Memcache, RabbitMQ, Tomcat, and Nginx are the services used in this project.
+
 ![workflow](img/workflow_diagram.png)
 
 ---
@@ -24,6 +27,7 @@ This project is a multi-machine environment on M series Macbook Pro, with the fo
     - [2.4 - Tomcat Setup](#24---tomcat-setup)
     - [2.5 Code Build \& Deployment (app01)](#25-code-build--deployment-app01)
     - [2.6 NGINX Setup](#26-nginx-setup)
+  - [Verify on browser](#verify-on-browser)
 
 ---
 
@@ -614,5 +618,10 @@ ln -s /etc/nginx/sites-available/vproapp /etc/nginx/sites-enabled/vproapp
 
 # Restart Nginx
 systemctl restart nginx
-systemctl status nginx
 ```
+
+---
+
+## Verify on browser
+
+<img src="img/validate.png">
