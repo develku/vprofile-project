@@ -816,7 +816,9 @@ hue-6-2: #e6c07b
         </head>
         <body class="vscode-body vscode-light">
             <h1 id="vprofile-project">vprofile-project</h1>
+<p>This project is a multi-machine environment on M series Macbook Pro, with the following machines:</p>
 <p><img src="file:////Users/kud/Library/Mobile Documents/com~apple~CloudDocs/Programming/github_repo/vprofile-project/vprofile-project/img/workflow_diagram.png" alt="workflow"></p>
+<hr>
 <h2 id="table-of-contents">Table of Contents</h2>
 <ul>
 <li><a href="#vprofile-project">vprofile-project</a>
@@ -838,6 +840,7 @@ hue-6-2: #e6c07b
 <li><a href="#22---memcache-setup">2.2 - Memcache Setup</a></li>
 <li><a href="#23---rabbitmq-setup">2.3 - RabbitMQ Setup</a></li>
 <li><a href="#24---tomcat-setup">2.4 - Tomcat Setup</a></li>
+<li><a href="#25-code-build--deployment-app01">2.5 Code Build &amp; Deployment (app01)</a></li>
 </ul>
 </li>
 </ul>
@@ -881,7 +884,7 @@ vagrant status <span class="hljs-comment"># to check the status of the VMso</spa
 <p><img src="file:////Users/kud/Library/Mobile Documents/com~apple~CloudDocs/Programming/github_repo/vprofile-project/vprofile-project/img/vagrant_status.png" alt="vagrant_status"></p>
 <h3 id="11---check-the-hosts-file-on-db0">1.1 - Check the hosts file on db0</h3>
 <p>In a multi-machine environment, the hosts file on each machine should have the IP address and hostname of all the machines in the environment.</p>
-<pre><code class="language-bash">ssh db01
+<pre><code class="language-bash">vagrant ssh db01
 <span class="hljs-built_in">cat</span> /etc/hosts <span class="hljs-comment"># to check the hosts file</span>
 </code></pre>
 <p><img src="file:////Users/kud/Library/Mobile Documents/com~apple~CloudDocs/Programming/github_repo/vprofile-project/vprofile-project/img/hosts.png" alt="hosts"></p>
@@ -919,7 +922,7 @@ ping db01 -c 4
 <li>Nginx (Web SVC)</li>
 </ol>
 <h3 id="21---mysql-setup">2.1 - MySQL Setup</h3>
-<p><strong>Login</strong> to the db vm</p>
+<p><strong>Login</strong> to the db vm, and <strong>update</strong> the system.</p>
 <pre><code class="language-bash">vagrant ssh db01
 sudo -i
 <span class="hljs-built_in">cat</span> /etc/hosts <span class="hljs-comment"># to Verify Hosts entry.</span>
@@ -969,7 +972,7 @@ systemctl <span class="hljs-built_in">enable</span> mariadb
 </li>
 </ol>
 <p align="center">
-  <img src="file:////Users/kud/Library/Mobile Documents/com~apple~CloudDocs/Programming/github_repo/vprofile-project/vprofile-project/img/maria_installation.png" width="50%">
+  <img src="file:////Users/kud/Library/Mobile Documents/com~apple~CloudDocs/Programming/github_repo/vprofile-project/vprofile-project/img/maria_installation.png">
 </p>
 <p><strong>Set DB</strong> name and users.</p>
 <pre><code class="language-bash">mysql -u root -p
@@ -1007,8 +1010,16 @@ systemctl status mariadb
 <ul>
 <li>3306: MySQL Database Port</li>
 </ul>
-<pre><code class="language-bash">systemctl start firewalld
+<pre><code class="language-bash"><span class="hljs-comment"># restart dbus and firewalld</span>
+sudo systemctl restart dbus
+sudo systemctl restart firewalld
+
+<span class="hljs-comment"># firewalld is a firewall management tool for Linux operating systems.</span>
+systemctl start firewalld
 systemctl <span class="hljs-built_in">enable</span> firewalld
+systemctl status firewalld
+
+<span class="hljs-comment"># firewall rules for 3306</span>
 firewall-cmd --get-active-zones
 firewall-cmd --zone=public --add-port=3306/tcp --permanent
 firewall-cmd --reload
@@ -1030,12 +1041,21 @@ For example in wordpress, Apache and MySQL on the same machine, so Apache can ac
 but if they're on different machines, MySQL does not allow Apache to access it.
 so Memcach or Tomcat will be connecting to Memcache from a different machine, remotely, remote connection.</li>
 </ul>
-<pre><code class="language-bash">sudo yum install memcached -y
+<pre><code class="language-bash">sudo yum update -yh
+sudo yum install memcached -y
+
+<span class="hljs-comment"># start the memcached service</span>
 sudo systemctl start memcached
 sudo systemctl status memcached
 sudo systemctl <span class="hljs-built_in">enable</span> memcached
+
+<span class="hljs-comment"># change the configuration file</span>
 sed -i <span class="hljs-string">&#x27;s/127.0.0.1/0.0.0.0/g&#x27;</span> /etc/sysconfig/memcached
-vim /etc/sysconfig/memcached <span class="hljs-comment"># to check the changes</span>
+
+<span class="hljs-comment"># to check the changes</span>
+vim /etc/sysconfig/memcached
+
+<span class="hljs-comment"># restart the memcached service</span>
 sudo systemctl restart memcached
 </code></pre>
 <img src="file:////Users/kud/Library/Mobile Documents/com~apple~CloudDocs/Programming/github_repo/vprofile-project/vprofile-project/img/memcached.png" width=50%>
@@ -1047,6 +1067,10 @@ sudo systemctl restart memcached
 </ul>
 <pre><code class="language-bash"><span class="hljs-comment"># Permission to edit the file</span>
 sudo <span class="hljs-built_in">chmod</span> 666 /etc/sysconfig/network-scripts/ifcfg-eth1
+
+<span class="hljs-comment"># Restart dbus and firewalld</span>
+sudo systemctl restart dbus
+sudo systemctl restart firewalld
 
 <span class="hljs-comment"># add the TCP port to the permanent firewall rules</span>
 sudo firewall-cmd --add-port=11211/tcp --permanent
@@ -1104,13 +1128,19 @@ sudo rabbitmqctl add_user <span class="hljs-built_in">test</span> <span class="h
 <span class="hljs-comment"># set_user_tags &lt;username&gt; &lt;tag&gt;</span>
 sudo rabbitmqctl set_user_tags <span class="hljs-built_in">test</span> administrator
 
-<span class="hljs-comment"># Fedora changes</span>
+<span class="hljs-comment"># restart dbus and firewalld</span>
+sudo systemctl restart dbus
+sudo systemctl restart firewalld
+systemctl status firewalld
+
+<span class="hljs-comment"># Port 5671, 5672: RabbitMQ Ports</span>
 firewall-cmd --add-port=5671/tcp --permanent
 firewall-cmd --add-port=5672/tcp --permanent
 firewall-cmd --reload
 
 <span class="hljs-comment"># Restart RabbitMQ</span>
 sudo systemctl restart rabbitmq-server
+systemctl status rabbitmq-server
 
 <span class="hljs-comment"># reboot the rabbitmq</span>
 reboot
@@ -1119,6 +1149,163 @@ reboot
 <img src="file:////Users/kud/Library/Mobile Documents/com~apple~CloudDocs/Programming/github_repo/vprofile-project/vprofile-project/img/rabbit.png">
 <hr>
 <h3 id="24---tomcat-setup">2.4 - Tomcat Setup</h3>
+<p><strong>Login</strong> to the Tomcat VM.</p>
+<pre><code class="language-bash"><span class="hljs-comment"># Connect to the Tomcat VM</span>
+vagrant ssh app01
+sudo -i
+
+<span class="hljs-comment"># Verify Hosts entry.</span>
+<span class="hljs-built_in">cat</span> /etc/hosts
+
+<span class="hljs-comment"># Update the system</span>
+yum update -y
+
+<span class="hljs-comment"># Install Dependencies</span>
+sudo dnf -y install java-11-openjdk java-11-openjdk-devel
+sudo dnf install git maven wget -y
+
+<span class="hljs-comment"># Change the directory</span>
+<span class="hljs-built_in">cd</span> /tmp/
+
+<span class="hljs-comment"># Download the Tomcat</span>
+wget https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.75/bin/apache-tomcat-9.0.75.tar.gz
+
+<span class="hljs-comment"># Extract the Tomcat, -xvf: extract, verbose, file</span>
+tar -xvf apache-tomcat-9.0.75.tar.gz
+</code></pre>
+<p>Tomcat <strong>Configuration</strong>.</p>
+<ul>
+<li>Apache is an Organization.</li>
+<li>Tomcat is Product of Apache.</li>
+</ul>
+<pre><code class="language-bash"><span class="hljs-comment"># Add tomcat user, --home-dir: home directory, --shell: shell to use</span>
+useradd --home-dir /usr/local/tomcat --shell /sbin/nologin tomcat
+
+<span class="hljs-comment"># id tomcat: to check the user details</span>
+<span class="hljs-built_in">id</span> tomcat
+
+<span class="hljs-comment"># Copy data to tomcat home dir</span>
+<span class="hljs-built_in">cp</span> -r /tmp/apache-tomcat-9.0.75/* /usr/local/tomcat/
+
+<span class="hljs-comment"># Make tomcat user owner of tomcat home dir</span>
+<span class="hljs-comment"># Changing the owner of the tomcat directory to tomcat user</span>
+<span class="hljs-built_in">chown</span> -R tomcat.tomcat /usr/local/tomcat
+</code></pre>
+<p><strong>Setup</strong> systemctl command for tomcat</p>
+<pre><code class="language-bash"><span class="hljs-comment"># Create tomcat service file</span>
+vim /etc/systemd/system/tomcat.service
+</code></pre>
+<p><strong>Update</strong> the file with below content</p>
+<pre><code class="language-bash">[Unit]
+Description=Tomcat
+After=network.target
+
+[Service]
+User=tomcat
+WorkingDirectory=/usr/local/tomcat
+Environment=JRE_HOME=/usr/lib/jvm/jre
+Environment=JAVA_HOME=/usr/lib/jvm/jre
+Environment=CATALINA_HOME=/usr/local/tomcat
+Environment=CATALINE_BASE=/usr/local/tomcat
+ExecStart=/usr/local/tomcat/bin/catalina.sh run
+ExecStop=/usr/local/tomcat/bin/shutdown.sh
+SyslogIdentifier=tomcat-%i
+
+[Install]
+WantedBy=multi-user.target
+</code></pre>
+<p><strong>Reload</strong> systemd files</p>
+<pre><code class="language-bash"><span class="hljs-comment"># Reload the systemd files</span>
+systemctl daemon-reload
+
+<span class="hljs-comment"># Start the tomcat service</span>
+systemctl start tomcat
+systemctl <span class="hljs-built_in">enable</span> tomcat
+systemctl status tomcat
+</code></pre>
+<p>firewall and allowing port 8080 to access the tomcat</p>
+<pre><code class="language-bash"><span class="hljs-comment"># Restart dbus and firewalld</span>
+sudo systemctl restart dbus
+sudo systemctl restart firewalld
+
+<span class="hljs-comment"># firewalld is a firewall management tool for Linux operating systems.</span>
+systemctl start firewalld
+systemctl <span class="hljs-built_in">enable</span> firewalld
+systemctl status firewalld
+
+<span class="hljs-comment"># firewall rules for 8080</span>
+firewall-cmd --get-active-zones
+firewall-cmd --zone=public --add-port=8080/tcp --permanent
+firewall-cmd --reload
+</code></pre>
+<hr>
+<h3 id="25-code-build--deployment-app01">2.5 Code Build &amp; Deployment (app01)</h3>
+<p>Download the source code from the git repository.</p>
+<pre><code class="language-bash"><span class="hljs-built_in">cd</span> /tmp/
+git <span class="hljs-built_in">clone</span> -b main https://github.com/develku/vprofile-project.git
+
+<span class="hljs-comment"># Update configuration</span>
+<span class="hljs-built_in">cd</span> vprofile-project
+vim src/main/resources/application.properties
+</code></pre>
+<p><code>src/main/resources/application/.properties</code> file</p>
+<ul>
+<li>this file is used to store the configuration details of the application.</li>
+</ul>
+<pre><code class="language-properties"><span class="hljs-comment">#JDBC Configutation for Database Connection</span>
+<span class="hljs-attr">jdbc.driverClassName</span>=<span class="hljs-string">com.mysql.jdbc.Driver</span>
+<span class="hljs-attr">jdbc.url</span>=<span class="hljs-string">jdbc:mysql://db01:3306/accounts?useUnicode=true&amp;characterEncoding=UTF-8&amp;zeroDateTimeBehavior=convertToNull</span>
+<span class="hljs-attr">jdbc.username</span>=<span class="hljs-string">admin</span>
+<span class="hljs-attr">jdbc.password</span>=<span class="hljs-string">admin123</span>
+<span class="hljs-comment">
+#Memcached Configuration For Active and StandBy Host</span>
+<span class="hljs-comment">#For Active Host</span>
+<span class="hljs-attr">memcached.active.host</span>=<span class="hljs-string">mc01</span>
+<span class="hljs-attr">memcached.active.port</span>=<span class="hljs-string">11211</span>
+<span class="hljs-comment">#For StandBy Host</span>
+<span class="hljs-attr">memcached.standBy.host</span>=<span class="hljs-string">127.0.0.2</span>
+<span class="hljs-attr">memcached.standBy.port</span>=<span class="hljs-string">11211</span>
+<span class="hljs-comment">
+#RabbitMq Configuration</span>
+<span class="hljs-attr">rabbitmq.address</span>=<span class="hljs-string">rmq01</span>
+<span class="hljs-attr">rabbitmq.port</span>=<span class="hljs-string">5672</span>
+<span class="hljs-attr">rabbitmq.username</span>=<span class="hljs-string">test</span>
+<span class="hljs-attr">rabbitmq.password</span>=<span class="hljs-string">test</span>
+<span class="hljs-comment">
+#Elasticesearch Configuration</span>
+<span class="hljs-attr">elasticsearch.host</span> =<span class="hljs-string">192.168.1.85</span>
+<span class="hljs-attr">elasticsearch.port</span> =<span class="hljs-string">9300</span>
+<span class="hljs-attr">elasticsearch.cluster</span>=<span class="hljs-string">vprofile</span>
+<span class="hljs-attr">elasticsearch.node</span>=<span class="hljs-string">vprofilenode</span>
+</code></pre>
+<p><strong>Build</strong> the code using maven.</p>
+<ul>
+<li>Maven is a build automation tool used primarily for Java projects.</li>
+<li>Run this command where you find the file <code>pom.xml</code>.</li>
+</ul>
+<pre><code class="language-bash">mvn install
+</code></pre>
+<p>Deploy artifact to tomcat</p>
+<pre><code class="language-bash"><span class="hljs-comment"># stop the tomcat service</span>
+systemctl stop tomcat
+
+<span class="hljs-comment"># remove the existing default Tomcat application</span>
+<span class="hljs-comment"># and copy the new war file to the Tomcat webapps directory.</span>
+<span class="hljs-built_in">rm</span> -rf /usr/local/tomcat/webapps/ROOT
+<span class="hljs-built_in">cp</span> target/vprofile-v2.war /usr/local/tomcat/webapps/ROOT.war
+
+<span class="hljs-comment"># start the tomcat service</span>
+systemctl start tomcat
+systemctl status tomcat
+
+<span class="hljs-comment"># change the owner of the webapps directory to tomcat user</span>
+<span class="hljs-built_in">chown</span> tomcat.tomcat /usr/local/tomcat/webapps -R
+
+<span class="hljs-comment"># restart the tomcat service</span>
+systemctl restart tomcat
+</code></pre>
+<img src="file:////Users/kud/Library/Mobile Documents/com~apple~CloudDocs/Programming/github_repo/vprofile-project/vprofile-project/img/tomcat.png">
+<hr>
 
             
             

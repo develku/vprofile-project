@@ -1,6 +1,10 @@
 # vprofile-project
 
+This project is a multi-machine environment on M series Macbook Pro, with the following machines:
+
 ![workflow](img/workflow_diagram.png)
+
+---
 
 ## Table of Contents
 
@@ -18,6 +22,7 @@
     - [2.2 - Memcache Setup](#22---memcache-setup)
     - [2.3 - RabbitMQ Setup](#23---rabbitmq-setup)
     - [2.4 - Tomcat Setup](#24---tomcat-setup)
+    - [2.5 Code Build \& Deployment (app01)](#25-code-build--deployment-app01)
 
 ---
 
@@ -66,7 +71,7 @@ vagrant status # to check the status of the VMso
 In a multi-machine environment, the hosts file on each machine should have the IP address and hostname of all the machines in the environment.
 
 ```bash
-ssh db01
+vagrant ssh db01
 cat /etc/hosts # to check the hosts file
 ```
 
@@ -116,7 +121,7 @@ exit
 
 ### 2.1 - MySQL Setup
 
-**Login** to the db vm
+**Login** to the db vm, and **update** the system.
 
 ```bash
 vagrant ssh db01
@@ -156,7 +161,7 @@ mysql_secure_installation
    - it means we are reloading the privilege tables now. which means the changes we made will be reflected now.
 
 <p align="center">
-  <img src="img/maria_installation.png" width="50%">
+  <img src="img/maria_installation.png">
 </p>
 
 **Set DB** name and users.
@@ -210,8 +215,16 @@ Starting the **firewall** and **allowing** the mariadb to access from port 3306.
 - 3306: MySQL Database Port
 
 ```bash
+# restart dbus and firewalld
+sudo systemctl restart dbus
+sudo systemctl restart firewalld
+
+# firewalld is a firewall management tool for Linux operating systems.
 systemctl start firewalld
 systemctl enable firewalld
+systemctl status firewalld
+
+# firewall rules for 3306
 firewall-cmd --get-active-zones
 firewall-cmd --zone=public --add-port=3306/tcp --permanent
 firewall-cmd --reload
@@ -241,12 +254,21 @@ cat /etc/hosts # to Verify Hosts entry.
   so Memcach or Tomcat will be connecting to Memcache from a different machine, remotely, remote connection.
 
 ```bash
+sudo yum update -yh
 sudo yum install memcached -y
+
+# start the memcached service
 sudo systemctl start memcached
 sudo systemctl status memcached
 sudo systemctl enable memcached
+
+# change the configuration file
 sed -i 's/127.0.0.1/0.0.0.0/g' /etc/sysconfig/memcached
-vim /etc/sysconfig/memcached # to check the changes
+
+# to check the changes
+vim /etc/sysconfig/memcached
+
+# restart the memcached service
 sudo systemctl restart memcached
 ```
 
@@ -261,6 +283,10 @@ sudo systemctl restart memcached
 ```bash
 # Permission to edit the file
 sudo chmod 666 /etc/sysconfig/network-scripts/ifcfg-eth1
+
+# Restart dbus and firewalld
+sudo systemctl restart dbus
+sudo systemctl restart firewalld
 
 # add the TCP port to the permanent firewall rules
 sudo firewall-cmd --add-port=11211/tcp --permanent
@@ -329,13 +355,19 @@ sudo rabbitmqctl add_user test test
 # set_user_tags <username> <tag>
 sudo rabbitmqctl set_user_tags test administrator
 
-# Fedora changes
+# restart dbus and firewalld
+sudo systemctl restart dbus
+sudo systemctl restart firewalld
+systemctl status firewalld
+
+# Port 5671, 5672: RabbitMQ Ports
 firewall-cmd --add-port=5671/tcp --permanent
 firewall-cmd --add-port=5672/tcp --permanent
 firewall-cmd --reload
 
 # Restart RabbitMQ
 sudo systemctl restart rabbitmq-server
+systemctl status rabbitmq-server
 
 # reboot the rabbitmq
 reboot
@@ -347,3 +379,191 @@ reboot
 ---
 
 ### 2.4 - Tomcat Setup
+
+**Login** to the Tomcat VM.
+
+```bash
+# Connect to the Tomcat VM
+vagrant ssh app01
+sudo -i
+
+# Verify Hosts entry.
+cat /etc/hosts
+
+# Update the system
+yum update -y
+
+# Install Dependencies
+sudo dnf -y install java-11-openjdk java-11-openjdk-devel
+sudo dnf install git maven wget -y
+
+# Change the directory
+cd /tmp/
+
+# Download the Tomcat
+wget https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.75/bin/apache-tomcat-9.0.75.tar.gz
+
+# Extract the Tomcat, -xvf: extract, verbose, file
+tar -xvf apache-tomcat-9.0.75.tar.gz
+```
+
+Tomcat **Configuration**.
+
+- Apache is an Organization.
+- Tomcat is Product of Apache.
+
+```bash
+# Add tomcat user, --home-dir: home directory, --shell: shell to use
+useradd --home-dir /usr/local/tomcat --shell /sbin/nologin tomcat
+
+# id tomcat: to check the user details
+id tomcat
+
+# Copy data to tomcat home dir
+cp -r /tmp/apache-tomcat-9.0.75/* /usr/local/tomcat/
+
+# Make tomcat user owner of tomcat home dir
+# Changing the owner of the tomcat directory to tomcat user
+chown -R tomcat.tomcat /usr/local/tomcat
+```
+
+**Setup** systemctl command for tomcat
+
+```bash
+# Create tomcat service file
+vim /etc/systemd/system/tomcat.service
+```
+
+**Update** the file with below content
+
+```bash
+[Unit]
+Description=Tomcat
+After=network.target
+
+[Service]
+User=tomcat
+WorkingDirectory=/usr/local/tomcat
+Environment=JRE_HOME=/usr/lib/jvm/jre
+Environment=JAVA_HOME=/usr/lib/jvm/jre
+Environment=CATALINA_HOME=/usr/local/tomcat
+Environment=CATALINE_BASE=/usr/local/tomcat
+ExecStart=/usr/local/tomcat/bin/catalina.sh run
+ExecStop=/usr/local/tomcat/bin/shutdown.sh
+SyslogIdentifier=tomcat-%i
+
+[Install]
+WantedBy=multi-user.target
+```
+
+**Reload** systemd files
+
+```bash
+# Reload the systemd files
+systemctl daemon-reload
+
+# Start the tomcat service
+systemctl start tomcat
+systemctl enable tomcat
+systemctl status tomcat
+```
+
+firewall and allowing port 8080 to access the tomcat
+
+```bash
+# Restart dbus and firewalld
+sudo systemctl restart dbus
+sudo systemctl restart firewalld
+
+# firewalld is a firewall management tool for Linux operating systems.
+systemctl start firewalld
+systemctl enable firewalld
+systemctl status firewalld
+
+# firewall rules for 8080
+firewall-cmd --get-active-zones
+firewall-cmd --zone=public --add-port=8080/tcp --permanent
+firewall-cmd --reload
+```
+
+---
+
+### 2.5 Code Build & Deployment (app01)
+
+Download the source code from the git repository.
+
+```bash
+cd /tmp/
+git clone -b main https://github.com/develku/vprofile-project.git
+
+# Update configuration
+cd vprofile-project
+vim src/main/resources/application.properties
+```
+
+`src/main/resources/application/.properties` file
+
+- this file is used to store the configuration details of the application.
+
+```properties
+#JDBC Configutation for Database Connection
+jdbc.driverClassName=com.mysql.jdbc.Driver
+jdbc.url=jdbc:mysql://db01:3306/accounts?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull
+jdbc.username=admin
+jdbc.password=admin123
+
+#Memcached Configuration For Active and StandBy Host
+#For Active Host
+memcached.active.host=mc01
+memcached.active.port=11211
+#For StandBy Host
+memcached.standBy.host=127.0.0.2
+memcached.standBy.port=11211
+
+#RabbitMq Configuration
+rabbitmq.address=rmq01
+rabbitmq.port=5672
+rabbitmq.username=test
+rabbitmq.password=test
+
+#Elasticesearch Configuration
+elasticsearch.host =192.168.1.85
+elasticsearch.port =9300
+elasticsearch.cluster=vprofile
+elasticsearch.node=vprofilenode
+```
+
+**Build** the code using maven.
+
+- Maven is a build automation tool used primarily for Java projects.
+- Run this command where you find the file `pom.xml`.
+
+```bash
+mvn install
+```
+
+Deploy artifact to tomcat
+
+```bash
+# stop the tomcat service
+systemctl stop tomcat
+
+# remove the existing default Tomcat application
+# and copy the new war file to the Tomcat webapps directory.
+rm -rf /usr/local/tomcat/webapps/ROOT
+cp target/vprofile-v2.war /usr/local/tomcat/webapps/ROOT.war
+
+# start the tomcat service
+systemctl start tomcat
+systemctl status tomcat
+
+# change the owner of the webapps directory to tomcat user
+chown tomcat.tomcat /usr/local/tomcat/webapps -R
+
+# restart the tomcat service
+systemctl restart tomcat
+```
+
+<img src="img/tomcat.png">
+
+---
