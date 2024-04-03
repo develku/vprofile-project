@@ -821,7 +821,7 @@ hue-6-2: #e6c07b
 <li>Simple project to run and understand the workflow of web applications.</li>
 <li>MySQL, Memcache, RabbitMQ, Tomcat, and Nginx are the services used in this project.</li>
 </ul>
-<p><img src="file:////Users/kud/Library/Mobile Documents/com~apple~CloudDocs/Programming/github_repo/vprofile-project/vprofile-project/img/workflow_diagram.png" alt="workflow"></p>
+<p><img src="file:////Users/kud/Library/Mobile Documents/com~apple~CloudDocs/Programming/github_repo/vprofile-project/vprofile-project/attachments/workflow_diagram.png" alt="workflow"></p>
 <hr>
 <h2 id="table-of-contents">Table of Contents</h2>
 <ul>
@@ -887,18 +887,18 @@ vagrant plugin install vagrant-vbguest
 vagrant up <span class="hljs-comment"># to bring up the VMs</span>
 vagrant status <span class="hljs-comment"># to check the status of the VMso</span>
 </code></pre>
-<p><img src="file:////Users/kud/Library/Mobile Documents/com~apple~CloudDocs/Programming/github_repo/vprofile-project/vprofile-project/img/vagrant_status.png" alt="vagrant_status"></p>
+<img src="file:////Users/kud/Library/Mobile Documents/com~apple~CloudDocs/Programming/github_repo/vprofile-project/vprofile-project/attachments/vagrant_status.png">
 <h3 id="11---check-the-hosts-file-on-db0">1.1 - Check the hosts file on db0</h3>
 <p>In a multi-machine environment, the hosts file on each machine should have the IP address and hostname of all the machines in the environment.</p>
 <pre><code class="language-bash">vagrant ssh db01
 <span class="hljs-built_in">cat</span> /etc/hosts <span class="hljs-comment"># to check the hosts file</span>
 </code></pre>
-<p><img src="file:////Users/kud/Library/Mobile Documents/com~apple~CloudDocs/Programming/github_repo/vprofile-project/vprofile-project/img/hosts.png" alt="hosts"></p>
+<p><img src="file:////Users/kud/Library/Mobile Documents/com~apple~CloudDocs/Programming/github_repo/vprofile-project/vprofile-project/attachments/hosts.png" alt="hosts"></p>
 <h3 id="12---check-the-ping-for-web01-from-db01">1.2 - Check the ping for web01 from db01</h3>
 <p>To check the connectivity between the machines, we can use the ping command.</p>
 <pre><code class="language-bash">ping web01 -c 4 <span class="hljs-comment"># to check the ping 4 times</span>
 </code></pre>
-<p><img src="file:////Users/kud/Library/Mobile Documents/com~apple~CloudDocs/Programming/github_repo/vprofile-project/vprofile-project/img/ping_web01.png" alt="ping"></p>
+<p><img src="file:////Users/kud/Library/Mobile Documents/com~apple~CloudDocs/Programming/github_repo/vprofile-project/vprofile-project/attachments/ping_web01.png" alt="ping"></p>
 <h3 id="13---check-the-all-the-ping-for-all-the-machines">1.3 - Check the all the ping for all the machines</h3>
 <p>As we can check with the workflow, the connectivity between the machines is as follows:</p>
 <ol>
@@ -978,7 +978,7 @@ systemctl <span class="hljs-built_in">enable</span> mariadb
 </li>
 </ol>
 <p align="center">
-  <img src="file:////Users/kud/Library/Mobile Documents/com~apple~CloudDocs/Programming/github_repo/vprofile-project/vprofile-project/img/maria_installation.png">
+  <img src="file:////Users/kud/Library/Mobile Documents/com~apple~CloudDocs/Programming/github_repo/vprofile-project/vprofile-project/attachments/maria_installation.png">
 </p>
 <p><strong>Set DB</strong> name and users.</p>
 <pre><code class="language-bash">mysql -u root -p
@@ -1007,7 +1007,7 @@ mysql -u root -padmin123 accounts
 <pre><code class="language-sql"><span class="hljs-keyword">show</span> tables;
 exit;
 </code></pre>
-<img src="file:////Users/kud/Library/Mobile Documents/com~apple~CloudDocs/Programming/github_repo/vprofile-project/vprofile-project/img/sql_table.png" width="40%">
+<img src="file:////Users/kud/Library/Mobile Documents/com~apple~CloudDocs/Programming/github_repo/vprofile-project/vprofile-project/attachments/sql_table.png" width="40%">
 <p><strong>Done</strong> with the MySQL setup. Restart mariadb-server.</p>
 <pre><code class="language-bash">sudo systemctl restart mariadb
 systemctl status mariadb
@@ -1064,7 +1064,7 @@ vim /etc/sysconfig/memcached
 <span class="hljs-comment"># restart the memcached service</span>
 sudo systemctl restart memcached
 </code></pre>
-<img src="file:////Users/kud/Library/Mobile Documents/com~apple~CloudDocs/Programming/github_repo/vprofile-project/vprofile-project/img/memcached.png" width=50%>
+<img src="file:////Users/kud/Library/Mobile Documents/com~apple~CloudDocs/Programming/github_repo/vprofile-project/vprofile-project/attachments/memcached.png" width=50%>
 <p><strong>Starting</strong> the <strong>firewall</strong> and <strong>allowing</strong> the memcached to access from <strong>port 11211</strong>.</p>
 <ul>
 <li>-p 11211: Memcache TCP Port</li>
@@ -1152,7 +1152,7 @@ systemctl status rabbitmq-server
 reboot
 
 </code></pre>
-<img src="file:////Users/kud/Library/Mobile Documents/com~apple~CloudDocs/Programming/github_repo/vprofile-project/vprofile-project/img/rabbit.png">
+<img src="file:////Users/kud/Library/Mobile Documents/com~apple~CloudDocs/Programming/github_repo/vprofile-project/vprofile-project/attachments/rabbit.png">
 <hr>
 <h3 id="24---tomcat-setup">2.4 - Tomcat Setup</h3>
 <p><strong>Login</strong> to the Tomcat VM.</p>
@@ -1310,7 +1310,7 @@ systemctl status tomcat
 <span class="hljs-comment"># restart the tomcat service</span>
 systemctl restart tomcat
 </code></pre>
-<img src="file:////Users/kud/Library/Mobile Documents/com~apple~CloudDocs/Programming/github_repo/vprofile-project/vprofile-project/img/tomcat.png">
+<img src="file:////Users/kud/Library/Mobile Documents/com~apple~CloudDocs/Programming/github_repo/vprofile-project/vprofile-project/attachments/tomcat.png">
 <hr>
 <h3 id="26-nginx-setup">2.6 NGINX Setup</h3>
 <pre><code class="language-bash"><span class="hljs-comment"># Connect to the Nginx VM</span>
@@ -1352,7 +1352,7 @@ systemctl restart nginx
 </code></pre>
 <hr>
 <h2 id="verify-on-browser">Verify on browser</h2>
-<img src="file:////Users/kud/Library/Mobile Documents/com~apple~CloudDocs/Programming/github_repo/vprofile-project/vprofile-project/img/validate.png">
+<img src="file:////Users/kud/Library/Mobile Documents/com~apple~CloudDocs/Programming/github_repo/vprofile-project/vprofile-project/attachments/validate.png">
 
             
             

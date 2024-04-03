@@ -5,7 +5,7 @@ This project is a multi-machine environment on M series Macbook Pro, with the fo
 - Simple project to run and understand the workflow of web applications.
 - MySQL, Memcache, RabbitMQ, Tomcat, and Nginx are the services used in this project.
 
-![workflow](img/workflow_diagram.png)
+![workflow](attachments/workflow_diagram.png)
 
 ---
 
@@ -33,7 +33,7 @@ This project is a multi-machine environment on M series Macbook Pro, with the fo
 
 ## Flow of Execution
 
-1. Clone Source Code (https://github.com/hkhcoder/vprofile-project)
+1. Clone Source Code (<https://github.com/hkhcoder/vprofile-project>)
 2. cd into the vagrant dir
 3. Bring up Vm’s
 4. Validate
@@ -69,7 +69,7 @@ vagrant up # to bring up the VMs
 vagrant status # to check the status of the VMso
 ```
 
-![vagrant_status](img/vagrant_status.png)
+<img src="attachments/vagrant_status.png">
 
 ### 1.1 - Check the hosts file on db0
 
@@ -80,7 +80,7 @@ vagrant ssh db01
 cat /etc/hosts # to check the hosts file
 ```
 
-![hosts](img/hosts.png)
+![hosts](attachments/hosts.png)
 
 ### 1.2 - Check the ping for web01 from db01
 
@@ -90,7 +90,7 @@ To check the connectivity between the machines, we can use the ping command.
 ping web01 -c 4 # to check the ping 4 times
 ```
 
-![ping](img/ping_web01.png)
+![ping](attachments/ping_web01.png)
 
 ### 1.3 - Check the all the ping for all the machines
 
@@ -166,7 +166,7 @@ mysql_secure_installation
    - it means we are reloading the privilege tables now. which means the changes we made will be reflected now.
 
 <p align="center">
-  <img src="img/maria_installation.png">
+  <img src="attachments/maria_installation.png">
 </p>
 
 **Set DB** name and users.
@@ -206,7 +206,7 @@ show tables;
 exit;
 ```
 
-<img src="img/sql_table.png" width="40%">
+<img src="attachments/sql_table.png" width="40%">
 
 **Done** with the MySQL setup. Restart mariadb-server.
 
@@ -277,7 +277,7 @@ vim /etc/sysconfig/memcached
 sudo systemctl restart memcached
 ```
 
-<img src="img/memcached.png" width=50%>
+<img src="attachments/memcached.png" width=50%>
 
 **Starting** the **firewall** and **allowing** the memcached to access from **port 11211**.
 
@@ -379,7 +379,7 @@ reboot
 
 ```
 
-<img src="img/rabbit.png">
+<img src="attachments/rabbit.png">
 
 ---
 
@@ -569,7 +569,7 @@ chown tomcat.tomcat /usr/local/tomcat/webapps -R
 systemctl restart tomcat
 ```
 
-<img src="img/tomcat.png">
+<img src="attachments/tomcat.png">
 
 ---
 
@@ -624,4 +624,4 @@ systemctl restart nginx
 
 ## Verify on browser
 
-<img src="img/validate.png">
+<img src="attachments/validate.png">
