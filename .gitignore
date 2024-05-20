@@ -94,5 +94,3 @@ Dockerfile*
 .dockerignore
 docker-compose.yml
 .docker/
-
-userdata/

@@ -1,7 +1,9 @@
 #!/bin/bash
 DATABASE_PASS='admin123'
 
-# MEmcache
+# -----------------------------------------------
+# Step 1: Install and Configure Memcached
+# -----------------------------------------------
 yum install epel-release -y
 yum install memcached -y
 systemctl start memcached
@@ -9,7 +11,9 @@ systemctl enable memcached
 systemctl status memcached
 memcached -p 11211 -U 11111 -u memcached -d
 
-# Rabbit
+# -----------------------------------------------
+# Step 2: Install and Configure RabbitMQ
+# -----------------------------------------------
 yum install socat -y
 yum install erlang -y
 yum install wget -y
@@ -25,17 +29,19 @@ rabbitmqctl add_user rabbit bunny
 rabbitmqctl set_user_tags rabbit administrator
 systemctl restart rabbitmq-server
 
-# Mysql
+# -----------------------------------------------
+# Step 3: Install and Configure MariaDB
+# -----------------------------------------------
 yum install mariadb-server -y
 
-#mysql_secure_installation
+# Update MariaDB configuration to listen on all IP addresses
 sed -i 's/^127.0.0.1/0.0.0.0/' /etc/my.cnf
 
-# starting & enabling mariadb-server
+# Start and enable MariaDB service
 systemctl start mariadb
 systemctl enable mariadb
 
-#restore the dump file for the application
+# Set up MariaDB root user and database for the application
 mysqladmin -u root password "$DATABASE_PASS"
 mysql -u root -p"$DATABASE_PASS" -e "UPDATE mysql.user SET Password=PASSWORD('$DATABASE_PASS') WHERE User='root'"
 mysql -u root -p"$DATABASE_PASS" -e "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1')"
@@ -48,5 +54,5 @@ mysql -u root -p"$DATABASE_PASS" -e "grant all privileges on accounts.* TO 'admi
 mysql -u root -p"$DATABASE_PASS" accounts < /vagrant/vprofile-repo/src/main/resources/db_backup.sql
 mysql -u root -p"$DATABASE_PASS" -e "FLUSH PRIVILEGES"
 
-# Restart mariadb-server
+# Restart MariaDB service
 systemctl restart mariadb
