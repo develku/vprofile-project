@@ -95,3 +95,4 @@ Dockerfile*
 docker-compose.yml
 .docker/
 
+userdata/
