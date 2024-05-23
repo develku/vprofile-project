@@ -94,3 +94,6 @@ Dockerfile*
 .dockerignore
 docker-compose.yml
 .docker/
+
+# target directory
+target/
